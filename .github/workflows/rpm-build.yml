@@ -1,0 +1,109 @@
+name: RPM Build
+
+on:
+  workflow_call:
+    inputs:
+      rpm_name:
+        required: true
+        type: string
+        description: The name of the RPM.
+      rhel_version:
+        required: false
+        type: number
+        default: 8
+        description: Version of RHEL.
+      rpm_push_command:
+        required: false
+        type: string
+        description: Command which needs to be executed to push the rpm to something.
+    secrets:
+      sign_key:
+        required: true
+        description: Key to sign the RPM.
+      sign_key_passphrase:
+        required: true
+        description: Passphrase for sign Key.
+
+jobs:
+  build_rpm:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set given package name
+        if: ${{ inputs.rpm_name }}
+        run: echo "rpm_name=${{ inputs.rpm_name }}" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and Push RHEL 7
+        if: ${{ inputs.rhel_version == 7 }}
+        uses: docker/build-push-action@v2
+        with:
+          context: https://github.com/riege/rpm-build.git#main
+          file: docker-build/Dockerfile.centos-7
+          load: true
+          tags: build-rpm-rhel7:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and Push RHEL 8
+        if: ${{ inputs.rhel_version == 8 }}
+        uses: docker/build-push-action@v2
+        with:
+          context: https://github.com/riege/rpm-build.git#main
+          file: docker-build/Dockerfile.centos-8
+          load: true
+          tags: build-rpm-rhel8:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create ENV file
+        env:
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          GITHUB_RUN_NUMBER: $GITHUB_RUN_NUMBER
+          RPM_NAME: ${{ env.rpm_name }}
+          RPM_SIGN_KEY: ${{ secrets.sign_key }}
+          RPM_SIGN_KEY_PASSPHRASE: ${{ secrets.sign_key_passphrase }}
+          RHEL_VERSION: ${{ inputs.rhel_version }}
+        run: |
+          echo "GITHUB_REF_NAME=$GITHUB_REF_NAME" > .env
+          echo "GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER" >> .env
+          echo "RPM_NAME=$RPM_NAME" >> .env
+          echo "RPM_SIGN_KEY_PASSPHRASE=$RPM_SIGN_KEY_PASSPHRASE" >> .env
+          echo "RHEL_VERSION=$RHEL_VERSION" >> .env
+
+      - name: Build RPM
+        env:
+          RPM_NAME: ${{ env.rpm_name }}
+          RHEL_VERSION: ${{ inputs.rhel_version }}
+          RPM_SIGN_KEY: ${{ secrets.sign_key }}
+        run: |
+          echo "${RPM_SIGN_KEY}" > "rpm_signing_key.gpg"
+          mkdir -p ${{ github.workspace }}/RPMS
+          docker run --rm \
+                     -v "${{ github.workspace }}/SOURCES:/rpmbuild/SOURCES" \
+                     -v "${{ github.workspace }}/RPMS:/rpmbuild/RPMS" \
+                     -v "${{ github.workspace }}/rpm_signing_key.gpg:/rpmbuild/rpm_signing_key.gpg:ro" \
+                     -v "${{ github.workspace }}/${{ env.rpm_name }}.spec:/rpmbuild/SPECS/${{ env.rpm_name }}.spec:ro" \
+                     --env-file .env \
+                     build-rpm-rhel"${RHEL_VERSION}":latest
+
+      - name: Remove ENV file
+        if: always()
+        run: rm -Rf .env
+
+      - name: Remove Signing Key
+        if: always()
+        run: rm -Rf rpm_signing_key.gpg
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: RPMs
+          path: ${{ github.workspace }}/RPMS/
+
+      - name: Push RPM
+        if: ${{ inputs.rpm_push_command }}
+        run: ${{ inputs.rpm_push_command }}
