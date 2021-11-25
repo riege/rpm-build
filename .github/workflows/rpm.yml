@@ -1,0 +1,13 @@
+name: Build dummy rpm
+on:
+  push:
+    # branches:
+    #   - main
+    tags:
+      - "v*"
+
+jobs:
+  call-rpm-build-workflow:
+    uses: "riege/rpm-build/.github/workflows/rpm-build.yml@main"
+    with:
+      rpm_name: dummy-rpm

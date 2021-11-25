@@ -1,0 +1,54 @@
+name: RPM Build
+
+on:
+  workflow_call:
+    inputs:
+      rpm_name:
+        required: false
+        type: string
+        description: The name of the RPM.
+    # secrets:
+    #   sign_key:
+    #     required: true
+    #     description: Key to sign the RPM.
+
+jobs:
+  build_rpm:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set the package name to repo name
+        if: ${{ ! inputs.rpm_name }}
+        run: echo "rpm_name=$(echo ${{ github.repository }} | awk -F / '{print $2}')" >> $GITHUB_ENV
+
+      - name: Set given package name
+        if: ${{ inputs.rpm_name }}
+        run: echo "rpm_name=${{ inputs.rpm_name }}" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v2
+
+      - name: Create the folder tree
+        run: mkdir -p /home/runner/rpmbuild/{SPECS,SOURCES,BUILD,BUILDROOT,RPMS,SRPMS}
+
+      - name: Build tar.gz
+        run: tar -czvf /home/runner/rpmbuild/SOURCES/${{ env.rpm_name }}.tgz -C $PWD/SOURCES/ .
+
+      - name: Move Spec
+        run: mv $PWD/${{ env.rpm_name }}.spec /home/runner/rpmbuild/SPECS/${{ env.rpm_name }}.spec
+
+      - name: Build RPM
+        run: |
+          rpmbuild --undefine=_disable_source_fetch -ba /home/runner/rpmbuild/SPECS/${{ env.rpm_name }}.spec \
+          --define "release $GITHUB_RUN_NUMBER" \
+          --define "name ${{ env.rpm_name }}" \
+          --define "version ${{ github.ref_name }}"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: RPMs
+          path: /home/runner/rpmbuild/RPMS/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: SRPMS
+          path: /home/runner/rpmbuild/SRPMS/
