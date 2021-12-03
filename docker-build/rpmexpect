@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set rpmfile [lindex $argv 0]
+set pass [lindex $argv 1]
+set timeout -1
+spawn rpmsign --addsign $rpmfile
+expect -exact "Enter passphrase: "
+send -- "$pass\r"
+expect eof
+catch wait result
+exit [lindex $result 3]

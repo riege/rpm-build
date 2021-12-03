@@ -1,0 +1,5 @@
+FROM centos:7
+
+RUN yum install -y findutils rpm-build rpm-sign dos2unix expect
+
+RUN mkdir -p /rpmbuild/{SPECS,SOURCES,BUILD,BUILDROOT,RPMS,SRPMS}
