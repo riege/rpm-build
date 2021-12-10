@@ -1,6 +1,6 @@
 name: RPM Build
 
-on:
+on: # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       rpm_name:
