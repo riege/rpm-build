@@ -11,11 +11,16 @@ on:
         required: false
         type: number
         default: 8
-        description: Version of RHEL.
+        description: "Version of RHEL (Default: 8)."
       rpm_push_command:
         required: false
         type: string
         description: Command which needs to be executed to push the rpm to something.
+      rpm_source_path:
+        required: false
+        type: string
+        default: ""
+        description: "Path to the rpm sources and spec file (Default: '')."
     secrets:
       sign_key:
         required: true
@@ -84,10 +89,10 @@ jobs:
           echo "${RPM_SIGN_KEY}" > "rpm_signing_key.gpg"
           mkdir -p ${{ github.workspace }}/RPMS
           docker run --rm \
-                     -v "${{ github.workspace }}/SOURCES:/rpmbuild/SOURCES" \
+                     -v "${{ github.workspace }}/${{ inputs.rpm_source_path }}/SOURCES:/rpmbuild/SOURCES" \
                      -v "${{ github.workspace }}/RPMS:/rpmbuild/RPMS" \
                      -v "${{ github.workspace }}/rpm_signing_key.gpg:/rpmbuild/rpm_signing_key.gpg:ro" \
-                     -v "${{ github.workspace }}/${{ env.rpm_name }}.spec:/rpmbuild/SPECS/${{ env.rpm_name }}.spec:ro" \
+                     -v "${{ github.workspace }}/${{ inputs.rpm_source_path }}/${{ env.rpm_name }}.spec:/rpmbuild/SPECS/${{ env.rpm_name }}.spec:ro" \
                      --env-file .env \
                      build-rpm-rhel"${RHEL_VERSION}":latest
 
