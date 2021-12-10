@@ -36,7 +36,7 @@ jobs:
     steps:
       - name: Set given package name
         if: ${{ inputs.rpm_name }}
-        run: echo "rpm_name=${{ inputs.rpm_name }}" >> $GITHUB_ENV
+        run: echo "rpm_name=${{ inputs.rpm_name }}" >> "$GITHUB_ENV"
 
       - uses: actions/checkout@v2
 
@@ -74,11 +74,13 @@ jobs:
           RPM_SIGN_KEY_PASSPHRASE: ${{ secrets.sign_key_passphrase }}
           RHEL_VERSION: ${{ inputs.rhel_version }}
         run: |
-          echo "GITHUB_REF_NAME=$GITHUB_REF_NAME" > .env
-          echo "GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER" >> .env
-          echo "RPM_NAME=$RPM_NAME" >> .env
-          echo "RPM_SIGN_KEY_PASSPHRASE=$RPM_SIGN_KEY_PASSPHRASE" >> .env
-          echo "RHEL_VERSION=$RHEL_VERSION" >> .env
+          {
+          echo "GITHUB_REF_NAME=$GITHUB_REF_NAME"
+          echo "GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER"
+          echo "RPM_NAME=$RPM_NAME"
+          echo "RPM_SIGN_KEY_PASSPHRASE=$RPM_SIGN_KEY_PASSPHRASE"
+          echo "RHEL_VERSION=$RHEL_VERSION"
+          } > .env
 
       - name: Build RPM
         env:
