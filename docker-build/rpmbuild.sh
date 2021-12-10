@@ -3,9 +3,9 @@
 KEYFILE=/rpmbuild/rpm_signing_key.gpg
 KEYID="$(gpg --with-colons "$KEYFILE" | head -n1 | cut -d : -f 5)"
 
-tar -czvf /rpmbuild/SOURCES/"$RPM_NAME".tgz -C /rpmbuild/SOURCES/ .
+find /rpmbuild/SOURCES/ -iname .gitkeep -delete
 
-echo "KeyId: $KEYID"
+tar -czvf /rpmbuild/SOURCES/"$RPM_NAME".tgz -C /rpmbuild/SOURCES/ .
 
 gpg --import "$KEYFILE"
 echo "
