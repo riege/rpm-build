@@ -1,6 +1,6 @@
 set rpmfile [lindex $argv 0]
 set pass [lindex $argv 1]
-set timeout -1
+set timeout 120
 spawn rpmsign --addsign $rpmfile
 expect -exact "Enter pass phrase: "
 send -- "$pass\r"

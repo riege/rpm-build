@@ -1,6 +1,6 @@
 name: RPM Build
 
-on:
+on: # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       rpm_name:
@@ -11,11 +11,16 @@ on:
         required: false
         type: number
         default: 8
-        description: Version of RHEL.
+        description: "Version of RHEL (Default: 8)."
       rpm_push_command:
         required: false
         type: string
         description: Command which needs to be executed to push the rpm to something.
+      rpm_source_path:
+        required: false
+        type: string
+        default: ""
+        description: "Path to the rpm sources and spec file (Default: '')."
     secrets:
       sign_key:
         required: true
@@ -31,7 +36,7 @@ jobs:
     steps:
       - name: Set given package name
         if: ${{ inputs.rpm_name }}
-        run: echo "rpm_name=${{ inputs.rpm_name }}" >> $GITHUB_ENV
+        run: echo "rpm_name=${{ inputs.rpm_name }}" >> "$GITHUB_ENV"
 
       - uses: actions/checkout@v2
 
@@ -69,11 +74,13 @@ jobs:
           RPM_SIGN_KEY_PASSPHRASE: ${{ secrets.sign_key_passphrase }}
           RHEL_VERSION: ${{ inputs.rhel_version }}
         run: |
-          echo "GITHUB_REF_NAME=$GITHUB_REF_NAME" > .env
-          echo "GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER" >> .env
-          echo "RPM_NAME=$RPM_NAME" >> .env
-          echo "RPM_SIGN_KEY_PASSPHRASE=$RPM_SIGN_KEY_PASSPHRASE" >> .env
-          echo "RHEL_VERSION=$RHEL_VERSION" >> .env
+          {
+          echo "GITHUB_REF_NAME=$GITHUB_REF_NAME"
+          echo "GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER"
+          echo "RPM_NAME=$RPM_NAME"
+          echo "RPM_SIGN_KEY_PASSPHRASE=$RPM_SIGN_KEY_PASSPHRASE"
+          echo "RHEL_VERSION=$RHEL_VERSION"
+          } > .env
 
       - name: Build RPM
         env:
@@ -84,10 +91,10 @@ jobs:
           echo "${RPM_SIGN_KEY}" > "rpm_signing_key.gpg"
           mkdir -p ${{ github.workspace }}/RPMS
           docker run --rm \
-                     -v "${{ github.workspace }}/SOURCES:/rpmbuild/SOURCES" \
+                     -v "${{ github.workspace }}/${{ inputs.rpm_source_path }}/SOURCES:/rpmbuild/SOURCES" \
                      -v "${{ github.workspace }}/RPMS:/rpmbuild/RPMS" \
                      -v "${{ github.workspace }}/rpm_signing_key.gpg:/rpmbuild/rpm_signing_key.gpg:ro" \
-                     -v "${{ github.workspace }}/${{ env.rpm_name }}.spec:/rpmbuild/SPECS/${{ env.rpm_name }}.spec:ro" \
+                     -v "${{ github.workspace }}/${{ inputs.rpm_source_path }}/${{ env.rpm_name }}.spec:/rpmbuild/SPECS/${{ env.rpm_name }}.spec:ro" \
                      --env-file .env \
                      build-rpm-rhel"${RHEL_VERSION}":latest
 
