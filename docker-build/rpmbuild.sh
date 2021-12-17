@@ -3,18 +3,14 @@
 KEYFILE=/rpmbuild/rpm_signing_key.gpg
 KEYID="$(gpg --with-colons "$KEYFILE" | head -n1 | cut -d : -f 5)"
 
-find /rpmbuild/SOURCES/ -iname .gitkeep -delete
-
-tar -czvf /rpmbuild/SOURCES/"$RPM_NAME".tgz -C /rpmbuild/SOURCES/ .
-
 gpg --import "$KEYFILE"
 echo "
 %_signature gpg
 %_gpg_name $KEYID
 %_topdir /rpmbuild
-%release $GITHUB_RUN_NUMBER
+%release $RPM_RELEASE
 %name $RPM_NAME
-%version $GITHUB_REF_NAME
+%version $RPM_VERSION
 %debug_package %{nil}
 " > ~/.rpmmacros
 

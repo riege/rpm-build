@@ -6,7 +6,7 @@ on: # yamllint disable-line rule:truthy
       rpm_name:
         required: true
         type: string
-        description: The name of the RPM.
+        description: "The name of the RPM."
       rhel_version:
         required: false
         type: number
@@ -15,77 +15,79 @@ on: # yamllint disable-line rule:truthy
       rpm_push_command:
         required: false
         type: string
-        description: Command which needs to be executed to push the rpm to something.
+        description: "Command which needs to be executed to push the rpm to something."
       rpm_source_path:
         required: false
         type: string
-        default: ""
-        description: "Path to the rpm sources and spec file (Default: '')."
+        default: "."
+        description: "Path to the directory containing rpm SOURCES and spec file (Default: '.')."
+      build_artifact:
+        required: false
+        type: string
+        description: "Optional: name of uploaded build artifact that should be put into SOURCES folder before building."
     secrets:
       sign_key:
         required: true
-        description: Key to sign the RPM.
+        description: "Key to sign the RPM."
       sign_key_passphrase:
         required: true
-        description: Passphrase for sign Key.
+        description: "Passphrase for sign Key."
 
 jobs:
   build_rpm:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set given package name
-        if: ${{ inputs.rpm_name }}
-        run: echo "rpm_name=${{ inputs.rpm_name }}" >> "$GITHUB_ENV"
-
       - uses: actions/checkout@v2
+
+      - name: Create Build Artifacts Directory
+        run: mkdir BUILD_ARTIFACTS
+
+      - name: Download Build Artifact
+        if: ${{ inputs.build_artifact }}
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ inputs.build_artifact }}
+          path: BUILD_ARTIFACTS
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Build and Push RHEL 7
-        if: ${{ inputs.rhel_version == 7 }}
+      - name: Build rpmbuild Container
         uses: docker/build-push-action@v2
         with:
           context: https://github.com/riege/rpm-build.git#main
-          file: docker-build/Dockerfile.centos-7
+          file: docker-build/Dockerfile.centos-${{ inputs.rhel_version }}
           load: true
-          tags: build-rpm-rhel7:latest
+          tags: build-rpm-rhel${{ inputs.rhel_version }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and Push RHEL 8
-        if: ${{ inputs.rhel_version == 8 }}
-        uses: docker/build-push-action@v2
-        with:
-          context: https://github.com/riege/rpm-build.git#main
-          file: docker-build/Dockerfile.centos-8
-          load: true
-          tags: build-rpm-rhel8:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      - name: Determine Version
+        id: version
+        uses: riege/action-version@v1
 
       - name: Create ENV file
-        env:
-          GITHUB_REF_NAME: ${{ github.ref_name }}
-          GITHUB_RUN_NUMBER: $GITHUB_RUN_NUMBER
-          RPM_NAME: ${{ env.rpm_name }}
-          RPM_SIGN_KEY: ${{ secrets.sign_key }}
-          RPM_SIGN_KEY_PASSPHRASE: ${{ secrets.sign_key_passphrase }}
-          RHEL_VERSION: ${{ inputs.rhel_version }}
         run: |
           {
-          echo "GITHUB_REF_NAME=$GITHUB_REF_NAME"
-          echo "GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER"
-          echo "RPM_NAME=$RPM_NAME"
-          echo "RPM_SIGN_KEY_PASSPHRASE=$RPM_SIGN_KEY_PASSPHRASE"
-          echo "RHEL_VERSION=$RHEL_VERSION"
+          echo "RPM_NAME=${{ inputs.rpm_name }}"
+          echo "RPM_VERSION=${{ steps.version.outputs.version-without-v }}"
+          echo "RPM_RELEASE=${{ github.run_number }}"
+          echo "RPM_SIGN_KEY_PASSPHRASE=${{ secrets.sign_key_passphrase }}"
           } > .env
+
+      - name: Prepare SOURCES
+        working-directory: ${{ inputs.rpm_source_path }}
+        run: |
+          # cleanup unused .gitkeep files
+          find SOURCES/ -iname .gitkeep -delete
+          # make tarball from original SOURCES
+          tar -czvf ${{ github.workspace }}/BUILD_ARTIFACTS/${{ inputs.rpm_name }}.tgz -C SOURCES/ .
+          # move all build artifacts to SOURCES
+          mv ${{ github.workspace }}/BUILD_ARTIFACTS/* SOURCES/
 
       - name: Build RPM
         env:
-          RPM_NAME: ${{ env.rpm_name }}
-          RHEL_VERSION: ${{ inputs.rhel_version }}
           RPM_SIGN_KEY: ${{ secrets.sign_key }}
         run: |
           echo "${RPM_SIGN_KEY}" > "rpm_signing_key.gpg"
@@ -94,17 +96,15 @@ jobs:
                      -v "${{ github.workspace }}/${{ inputs.rpm_source_path }}/SOURCES:/rpmbuild/SOURCES" \
                      -v "${{ github.workspace }}/RPMS:/rpmbuild/RPMS" \
                      -v "${{ github.workspace }}/rpm_signing_key.gpg:/rpmbuild/rpm_signing_key.gpg:ro" \
-                     -v "${{ github.workspace }}/${{ inputs.rpm_source_path }}/${{ env.rpm_name }}.spec:/rpmbuild/SPECS/${{ env.rpm_name }}.spec:ro" \
+                     -v "${{ github.workspace }}/${{ inputs.rpm_source_path }}/${{ inputs.rpm_name }}.spec:/rpmbuild/SPECS/${{ inputs.rpm_name }}.spec:ro" \
                      --env-file .env \
-                     build-rpm-rhel"${RHEL_VERSION}":latest
+                     build-rpm-rhel${{ inputs.rhel_version }}:latest
 
-      - name: Remove ENV file
+      - name: Cleanup
         if: always()
-        run: rm -Rf .env
-
-      - name: Remove Signing Key
-        if: always()
-        run: rm -Rf rpm_signing_key.gpg
+        run: |
+          rm -Rf .env
+          rm -Rf rpm_signing_key.gpg
 
       - uses: actions/upload-artifact@v2
         with:
