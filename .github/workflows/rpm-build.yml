@@ -36,7 +36,7 @@ on: # yamllint disable-line rule:truthy
         description: "Key to sign the RPM."
       sign_key_passphrase:
         required: true
-        description: "Passphrase for sign Key."
+        description: "Passphrase for sign key."
 
 jobs:
   build_rpm:
