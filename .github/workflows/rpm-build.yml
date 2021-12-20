@@ -128,5 +128,5 @@ jobs:
       - name: Upload to YUM repo storage
         if: ${{ inputs.yumrepo_path }}
         run: |
-          UPLOAD_URL="https://${{ secrets.yumrepo_storage_account_name }}.blob.core.windows.net/${{ secrets.yumrepo_container }}/${{ inputs.yumrepo_path}}/Packages${{ secrets.yumrepo_sas_token }}"
+          UPLOAD_URL="https://${{ secrets.yumrepo_storage_account_name }}.blob.core.windows.net/${{ secrets.yumrepo_container }}/${{ inputs.yumrepo_path }}/Packages${{ secrets.yumrepo_sas_token }}"
           cd RPMS && azcopy copy --blob-type BlockBlob --put-md5 *.rpm "$UPLOAD_URL"
