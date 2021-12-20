@@ -7,6 +7,15 @@ on: # yamllint disable-line rule:truthy
         required: true
         type: string
         description: "The name of the RPM."
+      rpm_version:
+        required: true
+        type: string
+        description: "The version of the RPM."
+      rpm_release:
+        required: false
+        type: string
+        default: "${{ github.run_number }}"
+        description: "The release number of the RPM version. Defaults to the GitHub workflow run number."
       rhel_version:
         required: false
         type: number
@@ -63,16 +72,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Determine Version
-        id: version
-        uses: riege/action-version@v1
-
       - name: Create ENV file
         run: |
           {
           echo "RPM_NAME=${{ inputs.rpm_name }}"
-          echo "RPM_VERSION=${{ steps.version.outputs.version-without-v }}"
-          echo "RPM_RELEASE=${{ github.run_number }}"
+          echo "RPM_VERSION=${{ inputs.rpm_version }}"
+          echo "RPM_RELEASE=${{ inputs.rpm_release }}"
           echo "RPM_SIGN_KEY_PASSPHRASE=${{ secrets.sign_key_passphrase }}"
           } > .env
 
