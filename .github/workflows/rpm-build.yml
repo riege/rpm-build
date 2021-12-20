@@ -21,10 +21,6 @@ on: # yamllint disable-line rule:truthy
         type: number
         default: 8
         description: "Version of RHEL (Default: 8)."
-      rpm_push_command:
-        required: false
-        type: string
-        description: "Command which needs to be executed to push the rpm to something."
       rpm_source_path:
         required: false
         type: string
@@ -34,6 +30,10 @@ on: # yamllint disable-line rule:truthy
         required: false
         type: string
         description: "Optional: name of uploaded build artifact that should be put into SOURCES folder before building."
+      yumrepo_path:
+        required: false
+        type: string
+        description: "Optional: Path in YUM repository where RPMs will be uploaded after creation. Won't upload anything if not specified."
     secrets:
       sign_key:
         required: true
@@ -41,6 +41,15 @@ on: # yamllint disable-line rule:truthy
       sign_key_passphrase:
         required: true
         description: "Passphrase for sign Key."
+      yumrepo_storage_account_name:
+        required: false
+        description: "Optional: Storage account name for RPM upload."
+      yumrepo_container:
+        required: false
+        description: "Optional: Container name for storage account."
+      yumrepo_sas_token:
+        required: false
+        description: "Optional: Shared access token for storage account."
 
 jobs:
   build_rpm:
@@ -116,6 +125,8 @@ jobs:
           name: RPMs
           path: ${{ github.workspace }}/RPMS/
 
-      - name: Push RPM
-        if: ${{ inputs.rpm_push_command }}
-        run: ${{ inputs.rpm_push_command }}
+      - name: Upload to YUM repo storage
+        if: ${{ inputs.yumrepo_path }}
+        run: |
+          UPLOAD_URL="https://${{ secrets.yumrepo_storage_account_name }}.blob.core.windows.net/${{ secrets.yumrepo_container }}/${{ inputs.yumrepo_path}}${{ secrets.yumrepo_sas_token }}"
+          cd RPMS && azcopy copy --blob-type BlockBlob --put-md5 *.rpm "$UPLOAD_URL"
