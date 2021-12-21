@@ -21,10 +21,6 @@ on: # yamllint disable-line rule:truthy
         type: number
         default: 8
         description: "Version of RHEL (Default: 8)."
-      rpm_push_command:
-        required: false
-        type: string
-        description: "Command which needs to be executed to push the rpm to something."
       rpm_source_path:
         required: false
         type: string
@@ -40,7 +36,7 @@ on: # yamllint disable-line rule:truthy
         description: "Key to sign the RPM."
       sign_key_passphrase:
         required: true
-        description: "Passphrase for sign Key."
+        description: "Passphrase for sign key."
 
 jobs:
   build_rpm:
@@ -113,9 +109,5 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: RPMs
-          path: ${{ github.workspace }}/RPMS/
-
-      - name: Push RPM
-        if: ${{ inputs.rpm_push_command }}
-        run: ${{ inputs.rpm_push_command }}
+          name: rpms
+          path: ${{ github.workspace }}/RPMS
