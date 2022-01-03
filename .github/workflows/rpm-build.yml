@@ -114,5 +114,5 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: ${{ rpm_artifact_name }}
+          name: ${{ inputs.rpm_artifact_name }}
           path: ${{ github.workspace }}/RPMS
