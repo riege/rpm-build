@@ -30,6 +30,11 @@ on: # yamllint disable-line rule:truthy
         required: false
         type: string
         description: "Optional: name of uploaded build artifact that should be put into SOURCES folder before building."
+      rpm_artifact_name:
+        required: false
+        type: string
+        default: rpms
+        description: "Optional: name of the rpms artifact. Useful to set different names if you want to build rhel7 and rhel8 rpms."
     secrets:
       sign_key:
         required: true
@@ -109,5 +114,5 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: rpms
+          name: ${{ inputs.rpm_artifact_name }}
           path: ${{ github.workspace }}/RPMS
