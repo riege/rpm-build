@@ -129,6 +129,7 @@ above.
 | `rhel_version` | `false` | Version of RHEL (Default: 8). |
 | `rpm_source_path` | `false` | Path to the directory containing rpm SOURCES and spec file (Default: '.'). |
 | `build_artifact` | `false` | Optional: name of uploaded build artifact that should be put into SOURCES folder before building. |
+| `rpm_artifact_name` | `false` | Optional: name of the rpm artifact. Useful to set different names if you want to build rhel7 and rhel8 rpms. |
 
 ## Input Secrets
 

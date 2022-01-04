@@ -34,7 +34,7 @@ on: # yamllint disable-line rule:truthy
         required: false
         type: string
         default: rpms
-        description: "Optional: name of the rpms artifact. Useful to set different names if you want to build rhel7 and rhel8 rpms."
+        description: "Optional: name of the rpm artifact. Useful to set different names if you want to build rhel7 and rhel8 rpms."
     secrets:
       sign_key:
         required: true
