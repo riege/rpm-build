@@ -1,12 +1,13 @@
 FROM centos:8
 
-RUN yum install -y findutils rpm-build rpm-sign dos2unix expect
+# hadolint ignore=DL3041
+RUN dnf install -y findutils rpm-build rpm-sign dos2unix && dnf clean all
 
+# hadolint ignore=SC2039
 RUN mkdir -p /rpmbuild/{SPECS,SOURCES,BUILD,BUILDROOT,RPMS,SRPMS}
 
 COPY ./docker-build/rpmbuild.sh /
-COPY ./docker-build/rpmexpect /
 
-RUN chmod +x /rpmbuild.sh && chmod +x /rpmexpect
+RUN chmod +rx /rpmbuild.sh
 
 ENTRYPOINT ["/rpmbuild.sh"]

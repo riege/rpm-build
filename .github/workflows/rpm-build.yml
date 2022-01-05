@@ -73,13 +73,30 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Import GPG key
+        id: import_gpg
+        uses: hashicorp/ghaction-import-gpg@v2.1.0
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.sign_key }}
+          PASSPHRASE: ${{ secrets.sign_key_passphrase }}
+
+      - name: Create RPM macros file
+        run: |
+          echo "
+          %_signature gpg
+          %_gpg_name ${{ steps.import_gpg.outputs.fingerprint }}
+          %__gpg_sign_cmd /usr/bin/gpg2 gpg --batch --verbose --no-armor --pinentry-mode=loopback --no-secmem-warning  -u '%{_gpg_name}' -sbo %{__signature_filename} %{__plaintext_filename}
+          %_topdir /rpmbuild
+          %release ${{ inputs.rpm_release }}
+          %name ${{ inputs.rpm_name }}
+          %version ${{ inputs.rpm_version }}
+          %debug_package %{nil}
+          " > ~/.rpmmacros
+
       - name: Create ENV file
         run: |
           {
           echo "RPM_NAME=${{ inputs.rpm_name }}"
-          echo "RPM_VERSION=${{ inputs.rpm_version }}"
-          echo "RPM_RELEASE=${{ inputs.rpm_release }}"
-          echo "RPM_SIGN_KEY_PASSPHRASE=${{ secrets.sign_key_passphrase }}"
           } > .env
 
       - name: Prepare SOURCES
@@ -93,24 +110,23 @@ jobs:
           mv ${{ github.workspace }}/BUILD_ARTIFACTS/* SOURCES/
 
       - name: Build RPM
-        env:
-          RPM_SIGN_KEY: ${{ secrets.sign_key }}
         run: |
-          echo "${RPM_SIGN_KEY}" > "rpm_signing_key.gpg"
           mkdir -p ${{ github.workspace }}/RPMS
           docker run --rm \
                      -v "${{ github.workspace }}/${{ inputs.rpm_source_path }}/SOURCES:/rpmbuild/SOURCES" \
                      -v "${{ github.workspace }}/RPMS:/rpmbuild/RPMS" \
-                     -v "${{ github.workspace }}/rpm_signing_key.gpg:/rpmbuild/rpm_signing_key.gpg:ro" \
+                     -v "$HOME/.rpmmacros:/root/.rpmmacros:ro" \
                      -v "${{ github.workspace }}/${{ inputs.rpm_source_path }}/${{ inputs.rpm_name }}.spec:/rpmbuild/SPECS/${{ inputs.rpm_name }}.spec:ro" \
                      --env-file .env \
                      build-rpm-rhel${{ inputs.rhel_version }}:latest
 
-      - name: Cleanup
-        if: always()
+      - name: sign RPMs
         run: |
-          rm -Rf .env
-          rm -Rf rpm_signing_key.gpg
+          RPMFILE=$(find "${{ github.workspace }}/RPMS" -name "*.rpm") || exit 1
+          mkdir -p ~/RPMS/
+          cp "$RPMFILE" ~/RPMS/
+          RPMFILE=$(find "$HOME/RPMS" -name "*.rpm")
+          rpmsign --addsign "$RPMFILE"
 
       - uses: actions/upload-artifact@v2
         with:
