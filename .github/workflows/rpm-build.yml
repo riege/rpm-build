@@ -123,8 +123,8 @@ jobs:
       - name: sign RPMs
         run: |
           RPMFILE=$(find "${{ github.workspace }}/RPMS" -name "*.rpm") || exit 1
-          mkdir -p ~/RPMS/
-          cp "$RPMFILE" ~/RPMS/
+          mkdir -p "$HOME/RPMS/"
+          cp "$RPMFILE" "$HOME/RPMS/"
           RPMFILE=$(find "$HOME/RPMS" -name "*.rpm")
           rpmsign --addsign "$RPMFILE"
 
