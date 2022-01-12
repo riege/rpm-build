@@ -121,14 +121,16 @@ jobs:
                      build-rpm-rhel${{ inputs.rhel_version }}:latest
 
       - name: sign RPMs
+        id: sign_rpm
         run: |
           RPMFILE=$(find "${{ github.workspace }}/RPMS" -name "*.rpm") || exit 1
           mkdir -p "$HOME/RPMS/"
           cp "$RPMFILE" "$HOME/RPMS/"
+          echo "::set-output name=rpm_path::$HOME/RPMS/"
           RPMFILE=$(find "$HOME/RPMS" -name "*.rpm")
           rpmsign --addsign "$RPMFILE"
 
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ inputs.rpm_artifact_name }}
-          path: "$HOME/RPMS"
+          path: ${{ steps.sign_rpm.outputs.rpm_path }}
