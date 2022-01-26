@@ -8,7 +8,7 @@ RUN yum install -y findutils rpm-build rpm-sign dos2unix && yum clean all
 # hadolint ignore=SC2039
 RUN mkdir -p /rpmbuild/{SPECS,SOURCES,BUILD,BUILDROOT,RPMS,SRPMS}
 
-COPY ./docker-build/rpmbuild.sh /
+COPY ./docker-build/rpmbuild-rhel6.sh /rpmbuild.sh
 
 RUN chmod +rx /rpmbuild.sh
 
