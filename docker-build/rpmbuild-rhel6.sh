@@ -3,6 +3,7 @@
 set -x
 
 ls -la /rpmbuild/SOURCES
+chown -R root:root /rpmbuild/SOURCES
 rpmbuild -bb /rpmbuild/SPECS/"$RPM_NAME".spec || exit 1
 RPMFILE=$(find "/rpmbuild/RPMS" -name "*.rpm") || exit 1
 
