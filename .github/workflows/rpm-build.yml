@@ -112,7 +112,6 @@ jobs:
       - name: Build RPM
         run: |
           mkdir -p ${{ github.workspace }}/RPMS
-          ls -la ${{ github.workspace }}/${{ inputs.rpm_source_path }}/SOURCES
           docker run --rm \
                      -v "${{ github.workspace }}/${{ inputs.rpm_source_path }}/SOURCES:/rpmbuild/SOURCES" \
                      -v "${{ github.workspace }}/RPMS:/rpmbuild/RPMS" \

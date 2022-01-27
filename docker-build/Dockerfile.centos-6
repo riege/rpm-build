@@ -2,7 +2,7 @@ FROM centos:6
 
 # hadolint ignore=DL3033
 # see https://www.getpagespeed.com/server-setup/how-to-fix-yum-after-centos-6-went-eol
-COPY ./docker-build/centos6-eol.repo /etc/yum.repos.d/
+COPY ./docker-build/centos6-eol.repo /etc/yum.repos.d/CentOS-Base.repo
 RUN yum install -y findutils rpm-build rpm-sign dos2unix && yum clean all
 
 # hadolint ignore=SC2039
