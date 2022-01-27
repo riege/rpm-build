@@ -1,4 +1,6 @@
-#!/usr/bin/env bash -x
+#!/usr/bin/env bash
+
+set -x
 
 ls -la /rpmbuild/SOURCES
 rpmbuild -bb /rpmbuild/SPECS/"$RPM_NAME".spec || exit 1
