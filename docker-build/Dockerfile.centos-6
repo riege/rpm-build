@@ -1,0 +1,16 @@
+FROM centos:6
+
+# see https://www.getpagespeed.com/server-setup/how-to-fix-yum-after-centos-6-went-eol
+COPY ./docker-build/centos6-eol.repo /etc/yum.repos.d/CentOS-Base.repo
+
+# hadolint ignore=DL3033
+RUN yum install -y findutils rpm-build rpm-sign dos2unix && yum clean all
+
+# hadolint ignore=SC2039
+RUN mkdir -p /rpmbuild/{SPECS,SOURCES,BUILD,BUILDROOT,RPMS,SRPMS}
+
+COPY ./docker-build/rpmbuild-rhel6.sh /rpmbuild.sh
+
+RUN chmod +rx /rpmbuild.sh
+
+ENTRYPOINT ["/rpmbuild.sh"]
