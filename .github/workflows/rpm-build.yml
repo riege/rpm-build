@@ -88,6 +88,7 @@ jobs:
           %__gpg_sign_cmd /usr/bin/gpg2 gpg --batch --verbose --no-armor --pinentry-mode=loopback --no-secmem-warning  -u '%{_gpg_name}' -sbo %{__signature_filename} %{__plaintext_filename}
           %_topdir /rpmbuild
           %release ${{ inputs.rpm_release }}
+          %rpm_release ${{ inputs.rpm_release }}%{?dist}
           %name ${{ inputs.rpm_name }}
           %version ${{ inputs.rpm_version }}
           %debug_package %{nil}
