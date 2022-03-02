@@ -140,3 +140,19 @@ you must pass them as secrets.
 | --- | --- |
 | `sign_key` | Key to sign the RPM. |
 | `sign_key_passphrase` | Passphrase for sign key. |
+
+## Useful RPM Macros of the Workflow
+
+| Macro | Description |
+| --- | --- |
+| `%name` | Use the `rpm_name` input of the workflow as name. |
+| `%version` | Use the `rpm_version` input of the workflow as version. |
+| `%rpm_release` | Use the `rpm_release` input and the default `%dist` macro as release. (Example: 1.el8 ) |
+
+Example .spec file snippet:
+
+```spec
+Name: %{name}
+Version: %{version}
+Release: %{rpm_release}
+```
