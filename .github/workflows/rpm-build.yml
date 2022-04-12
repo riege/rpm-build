@@ -131,7 +131,7 @@ jobs:
           RPMFILE=$(find "$HOME/RPMS" -name "*.rpm")
           rpmsign --addsign "$RPMFILE"
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.rpm_artifact_name }}
           path: ${{ steps.sign_rpm.outputs.rpm_path }}
