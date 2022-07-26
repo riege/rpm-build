@@ -1,5 +1,3 @@
-
-
 Copyright (c) 2022 Riege Software International GmbH, https://www.riege.com
 
 The Universal Permissive License (UPL), Version 1.0
