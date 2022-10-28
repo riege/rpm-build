@@ -109,6 +109,7 @@ jobs:
           tar -czvf ${{ github.workspace }}/BUILD_ARTIFACTS/${{ inputs.rpm_name }}.tgz -C SOURCES/ .
           # move all build artifacts to SOURCES
           mv ${{ github.workspace }}/BUILD_ARTIFACTS/* SOURCES/
+          ls -al SOURCES/
 
       - name: Build RPM
         run: |
