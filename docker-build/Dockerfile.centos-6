@@ -6,7 +6,7 @@ COPY ./docker-build/centos6-eol.repo /etc/yum.repos.d/CentOS-Base.repo
 # hadolint ignore=DL3033
 RUN yum install -y findutils rpm-build rpm-sign dos2unix rpmdevtools && yum clean all
 
-# hadolint ignore=SC2039 ignore=SC3009
+# hadolint ignore=SC2039,SC3009
 RUN mkdir -p /rpmbuild/{SPECS,SOURCES,BUILD,BUILDROOT,RPMS,SRPMS}
 
 COPY ./docker-build/rpmbuild-rhel6.sh /rpmbuild.sh
