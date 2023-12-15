@@ -55,7 +55,7 @@ jobs:
 
       - name: Download Build Artifact
         if: ${{ inputs.build_artifact }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.build_artifact }}
           path: BUILD_ARTIFACTS
@@ -132,7 +132,7 @@ jobs:
           RPMFILE=$(find "$HOME/RPMS" -name "*.rpm")
           rpmsign --addsign "$RPMFILE"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.rpm_artifact_name }}
           path: ${{ steps.sign_rpm.outputs.rpm_path }}
