@@ -1,4 +1,29 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>riege/renovate-config"]
+  "extends": [
+    "config:base",
+    "group:test",
+    "group:unitTest"
+  ],
+  "labels": ["dependencies"],
+  "platformAutomerge": true,
+  "platformCommit": true,
+  "separateMinorPatch": true,
+  "packageRules": [
+    {
+      "description": "Auto-merge patch and digest updates",
+      "matchUpdateTypes": ["patch", "digest"],
+      "automerge": true,
+      "addLabels": ["automerge"]
+    },
+    {
+      "description": "Group together updates to GitHub Actions",
+      "groupName": "GitHub Actions",
+      "groupSlug": "github-actions",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "addLabels": ["github_actions"]
+    }
+  ]
 }
