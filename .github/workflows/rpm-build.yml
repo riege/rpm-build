@@ -136,3 +136,4 @@ jobs:
         with:
           name: ${{ inputs.rpm_artifact_name }}
           path: ${{ steps.sign_rpm.outputs.rpm_path }}
+          retention-days: 7
