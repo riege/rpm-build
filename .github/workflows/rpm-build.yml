@@ -128,7 +128,7 @@ jobs:
           RPMFILE=$(find "${{ github.workspace }}/RPMS" -name "*.rpm") || exit 1
           mkdir -p "$HOME/RPMS/"
           cp "$RPMFILE" "$HOME/RPMS/"
-          echo "rpm_path=$HOME/RPMS/" >> $GITHUB_OUTPUT
+          echo "rpm_path=$HOME/RPMS/" >> "$GITHUB_OUTPUT"
           RPMFILE=$(find "$HOME/RPMS" -name "*.rpm")
           rpmsign --addsign "$RPMFILE"
 
@@ -136,3 +136,4 @@ jobs:
         with:
           name: ${{ inputs.rpm_artifact_name }}
           path: ${{ steps.sign_rpm.outputs.rpm_path }}
+          retention-days: 7
