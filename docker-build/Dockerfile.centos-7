@@ -1,4 +1,4 @@
-FROM centos:7
+FROM registry.access.redhat.com/ubi7/ubi:7.9-1445
 
 # hadolint ignore=DL3033
 RUN yum install -y findutils rpm-build rpm-sign dos2unix && yum clean all

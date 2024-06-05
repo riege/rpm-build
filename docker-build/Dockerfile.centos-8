@@ -1,4 +1,4 @@
-FROM quay.io/centos/centos:stream8
+FROM registry.access.redhat.com/ubi8/ubi:8.10-901.1716497712
 
 # hadolint ignore=DL3041
 RUN dnf install -y findutils rpm-build rpm-sign dos2unix && dnf clean all
