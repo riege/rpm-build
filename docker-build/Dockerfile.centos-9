@@ -3,7 +3,7 @@ FROM registry.access.redhat.com/ubi9/ubi:9.4-947.1716476138
 # hadolint ignore=DL3041
 RUN dnf install -y findutils rpm-build rpm-sign dos2unix && dnf clean all
 
-# hadolint ignore=SC2039
+# hadolint ignore=SC2039,SC3009
 RUN mkdir -p /rpmbuild/{SPECS,SOURCES,BUILD,BUILDROOT,RPMS,SRPMS}
 
 COPY ./docker-build/rpmbuild.sh /
