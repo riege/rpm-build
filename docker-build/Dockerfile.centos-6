@@ -1,4 +1,4 @@
-FROM oraclelinux:6.10
+FROM oraclelinux:8.10
 
 # hadolint ignore=DL3033
 RUN yum install -y findutils rpm-build rpm-sign dos2unix rpmdevtools && yum clean all
