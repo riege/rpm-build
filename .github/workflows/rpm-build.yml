@@ -64,7 +64,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build rpmbuild Container
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: https://github.com/riege/rpm-build.git#main
           file: docker-build/Dockerfile.centos-${{ inputs.rhel_version }}
