@@ -1,4 +1,4 @@
-FROM oraclelinux:9
+FROM oraclelinux:10
 
 # hadolint ignore=DL3041
 RUN dnf install -y findutils rpm-build rpm-sign dos2unix tar && dnf clean all
