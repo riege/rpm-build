@@ -48,23 +48,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Create Build Artifacts Directory
         run: mkdir BUILD_ARTIFACTS
 
       - name: Download Build Artifact
         if: ${{ inputs.build_artifact }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ inputs.build_artifact }}
           path: BUILD_ARTIFACTS
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Build rpmbuild Container
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: https://github.com/riege/rpm-build.git#main
           file: docker-build/Dockerfile.centos-${{ inputs.rhel_version }}
@@ -75,7 +75,7 @@ jobs:
 
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@v7
         with:
           gpg_private_key: ${{ secrets.sign_key }}
           passphrase: ${{ secrets.sign_key_passphrase }}
@@ -132,7 +132,7 @@ jobs:
           RPMFILE=$(find "$HOME/RPMS" -name "*.rpm")
           rpmsign --addsign "$RPMFILE"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.rpm_artifact_name }}
           path: ${{ steps.sign_rpm.outputs.rpm_path }}
