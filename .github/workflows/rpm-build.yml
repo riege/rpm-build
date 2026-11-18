@@ -85,7 +85,7 @@ jobs:
           echo "
           %_signature gpg
           %_gpg_name ${{ steps.import_gpg.outputs.fingerprint }}
-          %__gpg_sign_cmd /usr/bin/gpg2 gpg --batch --verbose --no-armor --pinentry-mode=loopback --no-secmem-warning  -u '%{_gpg_name}' -sbo %{__signature_filename} %{__plaintext_filename}
+          %__gpg /usr/bin/gpg
           %_topdir /rpmbuild
           %release ${{ inputs.rpm_release }}
           %rpm_release ${{ inputs.rpm_release }}%{?dist}
